@@ -6,13 +6,14 @@ By Giacomo Falchetta, Enrica De Cian, Ian Sue Wing and Deborah Carr
 Software requirements:
 - R v4.3+: https://cran.r-project.org/bin/windows/base/
 - RStudio: v2023.06.0+: https://posit.co/download/rstudio-desktop/
-- Package dependencies: raster, sf, tidyverse, rasterVis, rgdal, maptools, pbapply, terra, knitr, kableExtra, modelsummary, openxlsx, xtable, ggforce, maptools, weights, spatstat, rworldmap, scales, patchwork, stars, viridis
+- Package dependencies: raster, sf, tidyverse, rasterVis, rgdal, maptools, pbapply, terra, knitr, kableExtra, modelsummary, openxlsx, xtable, ggforce, maptools, weights, spatstat, rworldmap, scales, patchwork, stars, viridis, devtools, stargazer, readxl, nominatimlite, urbnmapr
 
 To replicate the analysis:
 - Download input data from https://doi.org/10.5281/zenodo.8409700
 - Download all the 1km age and gender-stratified global population counts rasters from the following WorldPop page https://hub.worldpop.org/geodata/summary?id=24798
 - Clone this code repository
 - Run the "project_pop.R" script to generate gridded age-stratified population data for each SSP scenario
+- Run the "compare_pop_projections.R" file to compare the generated gridded age-stratified population data with an array of pre-existing sources from different countries and produce a summary comparison tablex
 - Run "projections_exposure_m.R" to quantify heat exposure and generate the figures and tables reported in the paper
 
 To process the data and run succesfully, the script requires a computer with at least 32GB RAM. The running time varies based on CPU characteristics, but a runtime of at least 2 hours should be expected to generate all the output data, figures, and tables. All output files are saved in the working directory. 
