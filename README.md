@@ -13,7 +13,7 @@ To replicate the analysis:
 - Download all the 1km age and gender-stratified global population counts rasters from the following WorldPop page https://hub.worldpop.org/geodata/summary?id=24798
 - Clone this code repository
 - Run the "project_pop.R" script to generate gridded age-stratified population data for each SSP scenario
-- Run the "compare_pop_projections.R" file to compare the generated gridded age-stratified population data with an array of pre-existing sources from different countries and produce a summary comparison tablex
+- Run the "compare_pop_projections.R" file to compare the generated gridded age-stratified population data with an array of pre-existing sources from different countries and produce a summary comparison table  (NOTE: before running the script, decompress the "new_comparison_data.zip" folder into the working directory)
 - Run "projections_exposure_m.R" to quantify heat exposure and generate the figures and tables reported in the paper
 
 To process the data and run succesfully, the script requires a computer with at least 32GB RAM. The running time varies based on CPU characteristics, but a runtime of at least 2 hours should be expected to generate all the output data, figures, and tables. All output files are saved in the working directory. 
