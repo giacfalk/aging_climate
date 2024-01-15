@@ -28,12 +28,11 @@ library(nominatimlite)
 library(urbnmapr)
 
 # set the working directory
-stub <- "./AGE_EXPOSURE"
+stub <- "./"
 setwd(stub)
 
 # set the raster elaborating temporary directory
-rasterOptions(tmpdir = "./AGE_EXPOSURE")
-write("TMP = './AGE_EXPOSURE", file=file.path(Sys.getenv('R_USER'), '.Renviron'))
+rasterOptions(tmpdir = "./")
 
 clip_raster_with_sf <- function(rast, sf){
   
@@ -54,16 +53,16 @@ r1_ssp5_2050 <- stack("r1_g_585_2050_final.tif")
 r1_ssp1_2050 <- stack("r1_g_126_2050_final.tif")
 r1_ssp3_2050 <- stack("r1_g_370_2050_final.tif")
 #
-cdds <- list.files(path="CMIP6_medians", pattern="cdd24", full.names = T)
-cdds <- cdds[grep("cdd", cdds)]
+cdds <- list.files(pattern="cdd24", full.names = T)
+cdds <- cdds[-grep("ensemble", cdds)]
 cdds <- lapply(cdds, function(X){stack(rast(X))})
 #
 
-c1 <- mean(cdds[[1]], na.rm=T)
-c2 <- mean(cdds[[3]], na.rm=T)
-c3 <- mean(cdds[[5]], na.rm=T)
-c4 <- mean(cdds[[2]], na.rm=T)
-c5 <- mean(cdds[[4]], na.rm=T)
+c1 <- mean(cdds[[5]], na.rm=T)
+c2 <- mean(cdds[[2]], na.rm=T)
+c3 <- mean(cdds[[4]], na.rm=T)
+c4 <- mean(cdds[[1]], na.rm=T)
+c5 <- mean(cdds[[3]], na.rm=T)
 
 #
 c1 <- projectRaster(c1, r1_g[[1]])
@@ -126,14 +125,15 @@ r1_view[is.na(r3_view)] <- NA
 #
 #
 #
-tasmaxs <- list.files(path="CMIP6_medians", pattern="tasmax|tmax", full.names = T)
+tasmaxs <- list.files(pattern="tasmax|tmax", full.names = T)
+tasmaxs <- tasmaxs[-grep("ensemble", tasmaxs)]
 tasmaxs <- lapply(tasmaxs, function(X){stack(rast(X))})
 #
-c1_tasmax <- stackApply(tasmaxs[[1]], 1, median, na.rm=T)
-c2_tasmax <- stackApply(tasmaxs[[3]][[6:25]], 1, median, na.rm=T)
-c3_tasmax <- stackApply(tasmaxs[[5]][[6:25]], 1, median, na.rm=T)
-c4_tasmax <- stackApply(tasmaxs[[2]], 1, median, na.rm=T)
-c5_tasmax <- stackApply(tasmaxs[[4]], 1, median, na.rm=T)
+c1_tasmax <- stackApply(tasmaxs[[5]], 1, median, na.rm=T)
+c2_tasmax <- stackApply(tasmaxs[[2]], 1, median, na.rm=T)
+c3_tasmax <- stackApply(tasmaxs[[4]], 1, median, na.rm=T)
+c4_tasmax <- stackApply(tasmaxs[[1]], 1, median, na.rm=T)
+c5_tasmax <- stackApply(tasmaxs[[3]], 1, median, na.rm=T)
 #
 c1_tasmax <- projectRaster(c1_tasmax, r1_g[[1]])
 c2_tasmax <- projectRaster(c2_tasmax, r1_g[[1]])
@@ -216,14 +216,15 @@ names(multigcm_hotday_585) <- c("ACCESS-ESM1-5", "BCC-CSM2-MR", "CMCC-CM2-SR5", 
 #
 ##########
 #
-hotdays <- list.files(path="CMIP6_medians", pattern="hotdays", full.names = T)
+hotdays <- list.files(pattern="hotdays", full.names = T)
+hotdays <- hotdays[-grep("ensemble", hotdays)]
 hotdays <- lapply(hotdays, function(X){stack(rast(X))})
 #
-c1_hotday <- mean(hotdays[[1]][[1:20]], na.rm=T)
-c2_hotday <- mean(hotdays[[3]][[6:25]], na.rm=T)
-c3_hotday <- mean(hotdays[[5]][[6:25]], na.rm=T)
-c4_hotday <- mean(hotdays[[2]], na.rm=T)
-c5_hotday <- mean(hotdays[[4]], na.rm=T)
+c1_hotday <- mean(hotdays[[5]], na.rm=T)
+c2_hotday <- mean(hotdays[[2]], na.rm=T)
+c3_hotday <- mean(hotdays[[4]], na.rm=T)
+c4_hotday <- mean(hotdays[[1]], na.rm=T)
+c5_hotday <- mean(hotdays[[3]], na.rm=T)
 #
 c1_hotday_view <- c1_hotday
 c2_hotday_view <- c2_hotday
@@ -241,7 +242,7 @@ save.image("data_ready_v2.Rdata")
 
 #
 
-load("data_ready_v2.Rdata")
+# load("data_ready_v2.Rdata")
 
 ###################
 ### Figure 1 
@@ -649,7 +650,7 @@ bottom_row <- (fig4a + fig4b + fig4c) + plot_annotation(tag_levels = list(c("J",
 
 f1 <- cowplot::plot_grid(top_row, row2, row3, bottom_row, nrow=4)
 
-ggsave("maps.png", f1, scale=3.5, width = 4, height = 4)
+ggsave("maps.pdf", f1, scale=3.5, width = 4, height = 4)
 
 ### bivariate map(s)
 
@@ -723,8 +724,8 @@ for (scen in c("rhist", "r126", "r245", "r370", "r585")){
     geom_sf(data=regions, fill=NA, size =.3)
   
   ggsave(plot = map,
-         filename = paste0("map_biv_cdd_", region, "_", scen, ".png"),
-         device = "png", path = getwd(),
+         filename = paste0("map_biv_cdd_", region, "_", scen, ".pdf"),
+         device = "pdf", path = getwd(),
          dpi = 320, scale=1)
   
 }
@@ -788,8 +789,8 @@ for (scen in c("rhist", "r126", "r245", "r370", "r585")){
     geom_sf(data=regions, fill=NA, size =.3)
   
   ggsave(plot = map,
-         filename = paste0("map_biv_tmax_", region, "_", scen, ".png"),
-         device = "png", path = getwd(),
+         filename = paste0("map_biv_tmax_", region, "_", scen, ".pdf"),
+         device = "pdf", path = getwd(),
          dpi = 320, scale=1)
   
 }
@@ -850,8 +851,8 @@ for (scen in c("rhist", "r126", "r245", "r370", "r585")){
     geom_sf(data=regions, fill=NA, size =.3)
   
   ggsave(plot = map,
-         filename = paste0("map_biv_hotdays_", region, "_", scen, ".png"),
-         device = "png", path = getwd(),
+         filename = paste0("map_biv_hotdays_", region, "_", scen, ".pdf"),
+         device = "pdf", path = getwd(),
          dpi = 320, scale=1)
   
 }
@@ -924,7 +925,7 @@ colnames(df5)[1] <- colnames(df1)[1]
 # df3 <- df3 %>% arrange(exp) %>% mutate(f1=cumsum(values.sum.r1_g..))
 
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -973,7 +974,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1023,7 +1024,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1037,17 +1038,17 @@ df$id <- NULL
 
 # exposure change
 
-sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="Baseline"])
+sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="Historical"])
 
 sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="SSP1(26)"])
 sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="SSP2(45)"])
 sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="SSP3(70)"])
 sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>1200]) / sum(df$values.r1_g..3...[df$scen=="SSP5(85)"])
 
-sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>1200])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>1200])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>1200])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>1200])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>1200])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>1200])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>1200])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>1200])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>1200])/1e9
 
 #####
 
@@ -1060,7 +1061,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_c <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population >69 y.o, billion") + xlab("Yearly CDD exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 5000, 1000)) + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
+fig_1_panel_c <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("69+ population, billion") + xlab("Yearly CDD exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 5000, 1000)) + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
 
 #, trans="asinh"
 
@@ -1092,7 +1093,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1111,13 +1112,13 @@ df$reg[df$reg==7] <- "South America"
 df$id <- NULL
 
 # exposure level change, by region
-pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP1(26)"], values.r1_g..3...[scen=="SSP1(26)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Baseline"], values.r1_g..3...[scen=="Baseline"])))
+pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP1(26)"], values.r1_g..3...[scen=="SSP1(26)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Historical"], values.r1_g..3...[scen=="Historical"])))
 
-pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP2(45)"], values.r1_g..3...[scen=="SSP2(45)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Baseline"], values.r1_g..3...[scen=="Baseline"])))
+pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP2(45)"], values.r1_g..3...[scen=="SSP2(45)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Historical"], values.r1_g..3...[scen=="Historical"])))
 
-pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP3(70)"], values.r1_g..3...[scen=="SSP3(70)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Baseline"], values.r1_g..3...[scen=="Baseline"])))
+pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP3(70)"], values.r1_g..3...[scen=="SSP3(70)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Historical"], values.r1_g..3...[scen=="Historical"])))
 
-pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP5(85)"], values.r1_g..3...[scen=="SSP5(85)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Baseline"], values.r1_g..3...[scen=="Baseline"])))
+pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="SSP5(85)"], values.r1_g..3...[scen=="SSP5(85)"]))) - pull(df %>% group_by(reg) %>% dplyr::summarise(a = weighted.mean(exp[scen=="Historical"], values.r1_g..3...[scen=="Historical"])))
 
 ###
 
@@ -1126,7 +1127,7 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_d <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population >69 y.o-weighted CDD exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
+fig_1_panel_d <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("69+ population-weighted CDD exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
 
 #
 
@@ -1154,7 +1155,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1173,7 +1174,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_e <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population <69 y.o, billion") + xlab("Yearly CDD exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 5000, 1000)) + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
+fig_1_panel_e <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("<69 population, billion") + xlab("Yearly CDD exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 5000, 1000)) + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
 
 ##
 
@@ -1203,7 +1204,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1225,14 +1226,14 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_f <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population <69 y.o-weighted CDD exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
+fig_1_panel_f <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("69+ population weighted CDD exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal") + geom_vline(xintercept = 1200, linetype="dashed", colour="purple")
 
 ##
 
 
 fig_1 <- fig_1_panel_a + fig_1_panel_b + fig_1_panel_c + fig_1_panel_d + fig_1_panel_e + fig_1_panel_f + plot_annotation(tag_levels = 'A') + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = 'bottom') 
 
-ggsave("fig_2_CDD.png", fig_1, height=9.5, width = 10)
+ggsave("fig_2_CDD.pdf", fig_1, height=9.5, width = 10)
 
 #############
 
@@ -1271,7 +1272,7 @@ colnames(df5)[1] <- colnames(df1)[1]
 # df3 <- df3 %>% arrange(exp) %>% mutate(f1=cumsum(values.sum.r1_g..))
 
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1290,7 +1291,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_g <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population, total, billion") + xlab("Yearly Tmax 95th pctl. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
+fig_1_panel_g <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population, total, billion") + xlab("Yearly TMAX95 exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
 
 df1 <- data.frame(values(sum(r1_g)),  exp = values(c1_tasmax), reg = values(regions_r), values(multigcm_tasmax_hist), xy=T)
 df1$id <- 1:nrow(df1)
@@ -1316,7 +1317,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1338,7 +1339,7 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_h <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population-weighted Tmax 95th pctl. exposure") + ylab("Region") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
+fig_1_panel_h <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population-weighted TMAX95 exposure") + ylab("Region") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
 
 #####
 
@@ -1367,7 +1368,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1379,17 +1380,17 @@ df$id <- NULL
 
 # exposure change
 
-sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="Baseline"])
+sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="Historical"])
 
 sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="SSP1(26)"])
 sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="SSP2(45)"])
 sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="SSP3(70)"])
 sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>37.5]) / sum(df$values.r1_g..3...[df$scen=="SSP5(85)"])
 
-sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>37.5])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>37.5])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>37.5])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>37.5])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>37.5])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>37.5])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>37.5])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>37.5])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>37.5])/1e9
 
 #
 
@@ -1402,7 +1403,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_i <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population >69 y.o., billion") + xlab("Yearly Tmax 95th pctl. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
+fig_1_panel_i <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("69+ population, billion") + xlab("Yearly TMAX95 exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal") + geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
 
 ##
 
@@ -1432,7 +1433,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1454,7 +1455,7 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_j <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population >69 y.o-weighted Tmax 95th pctl. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(20, 60)) + geom_vline(xintercept = 37.5, linetype="dashed", colour="purple")
+fig_1_panel_j <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("69+ population-weighted TMAX95 exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(20, 60)) + geom_vline(xintercept = 37.5, linetype="dashed", colour="purple")
 
 #
 
@@ -1482,7 +1483,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1501,7 +1502,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_k <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population <69 y.o, billion") + xlab("Yearly Tmax 95th pctl. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
+fig_1_panel_k <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("<69 population, billion") + xlab("Yearly TMAX95 exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + theme(legend.position = "none", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple") + coord_cartesian(xlim = c(20, 60))
 
 
 df1 <- data.frame(values(sum(r1_g[[1:2]])),  exp = values(c1_tasmax), reg = values(regions_r), values(multigcm_tasmax_hist), xy=T)
@@ -1529,7 +1530,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1551,12 +1552,12 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_l <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population <69 y.o-weighted Tmax 95th pctl. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple")+ coord_cartesian(xlim = c(20, 60))
+fig_1_panel_l <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("<69 population-weighted TMAX95 exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ geom_vline(xintercept = 37.5, linetype="dashed", colour="purple")+ coord_cartesian(xlim = c(20, 60))
 
 
 fig_1 <- fig_1_panel_g + fig_1_panel_h + fig_1_panel_i + fig_1_panel_j  + fig_1_panel_k + fig_1_panel_l + plot_annotation(tag_levels = 'A') + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = 'bottom') 
 
-ggsave("fig_2_TMAX.png", fig_1, height=9.5, width = 10)
+ggsave("fig_2_TMAX.pdf", fig_1, height=9.5, width = 10)
 
 
 ###################
@@ -1598,7 +1599,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1618,7 +1619,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_m <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population, total, billion") + xlab("Yearly #hot days / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
+fig_1_panel_m <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population, total, billion") + xlab("Yearly #HD / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
 
 ##
 
@@ -1648,7 +1649,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1670,7 +1671,7 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_n <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population-weighted #hot days / yr. exposure") + ylab("Region") + theme(legend.position = "none", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
+fig_1_panel_n <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population-weighted #HD / yr. exposure") + ylab("Region") + theme(legend.position = "none", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
 
 #
 
@@ -1698,7 +1699,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1710,17 +1711,17 @@ df$id <- NULL
 
 # exposure change
 
-sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="Baseline"])
+sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="Historical"])
 
 sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="SSP1(26)"])
 sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="SSP2(45)"])
 sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="SSP3(70)"])
 sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>30]) / sum(df$values.r1_g..3...[df$scen=="SSP5(85)"])
 
-sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>30])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>30])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>30])/1e9
-sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Baseline" & df$exp>30])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP1(26)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>30])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP2(45)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>30])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP3(70)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>30])/1e9
+sum(df$values.r1_g..3...[df$scen=="SSP5(85)" & df$exp>30])/1e9 - sum(df$values.r1_g..3...[df$scen=="Historical" & df$exp>30])/1e9
 
 #
 
@@ -1733,7 +1734,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_o <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population >69 y.o, billion") + xlab("Yearly #hot days / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
+fig_1_panel_o <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.r1_g..3.../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("69+ population, billion") + xlab("Yearly #HD / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
 
 ##
 
@@ -1763,7 +1764,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1786,7 +1787,7 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_p <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population >69 y.o-weighted #hot days / yr. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
+fig_1_panel_p <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("69+ population-weighted #HD / yr. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
 
 #
 
@@ -1814,7 +1815,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1833,7 +1834,7 @@ df <- df %>%
 
 df$type <- ifelse(df$variable=="exp", "Median", "GCMs range")
 
-fig_1_panel_q <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("Population <69 y.o, billion") + xlab("Yearly #hot days / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
+fig_1_panel_q <- ggplot(df %>% sample_frac(0.001), aes(x=value, y=values.sum.r1_g..1.2..../1e9, colour=scen, group=interaction(scen,variable), alpha=type)) + theme_classic() + geom_step(show.legend = FALSE) + ylab("<69 population, billion") + xlab("Yearly #HD / yr. exposure (CMIP6)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + scale_x_continuous(breaks = seq(0, 200, 50)) + theme(legend.position = "none", legend.direction = "horizontal")
 
 ##
 
@@ -1863,7 +1864,7 @@ df5$id <- 1:nrow(df5)
 df5 <- na.omit(df5)
 colnames(df5)[1] <- colnames(df1)[1]
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -1885,11 +1886,11 @@ colnames(df2)[1] <- "pop"
 
 df2_m <- df2 %>% filter(variable=="exp") %>%  group_by(scen, reg) %>% dplyr::summarise(med_gcm = weighted.median(value, pop, na.rm=T))
 
-fig_1_panel_r <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("Population <69 y.o-weighted #hot days / yr. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
+fig_1_panel_r <- ggplot()+ theme_classic() + geom_boxplot(data=df2 %>% slice_sample(prop=.01), aes(y=reg, x=value, fill=scen, weight=pop), outlier.shape=NA) + scale_fill_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Scenario") + geom_point(data=df2_m, aes(y=reg, x=med_gcm, colour=scen), show.legend = F, position=position_dodge(0.75), shape=23, size=2.5) + scale_color_manual(values=rep("cyan", 5)) + xlab("<69 population-weighted #HD / yr. exposure") + ylab("Region") + theme(legend.position = "bottom", legend.direction = "horizontal")+ coord_cartesian(xlim = c(0, 200))
 
 fig_1 <- fig_1_panel_m + fig_1_panel_n + fig_1_panel_o + fig_1_panel_p + fig_1_panel_q + fig_1_panel_r + plot_annotation(tag_levels = 'A') + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = 'bottom') 
 
-ggsave("fig_2_hotdays.png", fig_1, height=9.5, width = 10)
+ggsave("fig_2_hotdays.pdf", fig_1, height=9.5, width = 10)
 
 ####
 
@@ -1897,6 +1898,7 @@ ggsave("fig_2_hotdays.png", fig_1, height=9.5, width = 10)
 
 fig_1 <- fig_1_panel_c + fig_1_panel_d + fig_1_panel_o + fig_1_panel_p + fig_1_panel_i + fig_1_panel_j  + plot_annotation(tag_levels = 'A') + plot_layout(guides = "collect", nrow = 3) & theme(legend.position = 'bottom') 
 
+ggsave("fig_2_new.pdf", fig_1, height=9.5, width = 10)
 ggsave("fig_2_new.png", fig_1, height=9.5, width = 10)
 
 # https://www.thelancet.com/journals/lanplh/article/PIIS2542-5196(21)00079-6/fulltext#:~:text=Short%20exposures%20to%20temperatures%20above,%2C%20fish%2C%20and%20agricultural%20crops.[ Short exposures to temperatures above 35?C with high humidity, or above 40?C with low humidity, can be lethal]
@@ -1908,7 +1910,7 @@ ggsave("fig_2_new.png", fig_1, height=9.5, width = 10)
 df <- data.frame(values(r1_g), exp = values(c1), reg = values(regions_r), xy=T)
 df <- na.omit(df)
 
-df <- df %>% dplyr::group_by(reg) %>% arrange(exp) %>% mutate(f1=cumsum(r1_2020_1+r1_2020_2)/sum(r1_2020_1+r1_2020_2), f3=cumsum(r1_2020_3)/sum(r1_2020_3))
+df <- df %>% dplyr::group_by(reg) %>% arrange(exp) %>% mutate(f1=cumsum(layer.1+layer.2)/sum(layer.1+layer.2), f3=cumsum(layer)/sum(layer))
 
 df$reg[df$reg==1] <- "Africa"
 df$reg[df$reg==2] <- NA
@@ -1927,7 +1929,7 @@ df2$variable <- ifelse(df2$variable=="f3", "Age group 69+", as.character(df2$var
 
 g <- ggplot(df2, aes(x=exp, y=value, group=reg, colour=reg)) + theme_classic() + geom_line() + ylab("Share of sub-population (%)") + xlab("Yearly CDD exposure (CMIP6 1995 - 2014)")+ggsci::scale_colour_npg(name="Region") + facet_wrap(vars(variable)) + scale_x_continuous(breaks = seq(0, 2500, 500)) + scale_y_continuous(breaks = seq(0, 1, .1), labels = scales::label_percent())
 
-ggsave("fig_3.png", g, width = 10)
+ggsave("fig_3.pdf", g, width = 10)
 
 # 
 # h <- ggplot(df2, aes(x=exp, y=value, group=variable, colour=variable)) + geom_line() + ylab("Share of sub-population (%)") + xlab("Yearly CDD exposure (CMIP6 1995 - 2014)")+scale_color_manual(values=c("#302f2b", "#fcec8d", "#ffbe0a", "#ff9830", "#b51209"),name="Region") + facet_wrap(vars(reg))
@@ -1975,7 +1977,7 @@ df4 <- df4 %>% dplyr::group_by(reg) %>% arrange(exp) %>% mutate(f1=cumsum(layer.
 
 df5 <- df5 %>% dplyr::group_by(reg) %>% arrange(exp) %>% mutate(f1=cumsum(layer.1+layer.2)/sum(layer.1+layer.2), f3=cumsum(layer.3)/sum(layer.3))
 
-df1$scen <- "Baseline"
+df1$scen <- "Historical"
 df2$scen <- "SSP2(45)"
 df3$scen <- "SSP5(85)"
 df4$scen <- "SSP1(26)"
@@ -2006,7 +2008,7 @@ g2 <- ggplot(df2, aes(x=exp+1, y=value, group=scen, colour=scen)) +
   scale_y_continuous(breaks = seq(0, 1, .25), labels = scales::label_percent())  +
   theme(legend.position = "bottom", legend.direction = "horizontal")
 
-ggsave("g2.png", g2, width = 11, height = 6, scale=0.85)
+ggsave("g2.pdf", g2, width = 11, height = 6, scale=0.85)
 
 ###################
 ### Figure 5 
@@ -2146,25 +2148,25 @@ df2_s <- filter(df2_s, scen != "Baseline (historical climate, 2020 population)")
 df2_s$exp_q = factor(df2_s$exp_q, ordered = T)
 df2_s$exp_q = as.numeric(df2_s$exp_q)
 
-g3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_si_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
   
 ##
 
-g3_si2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_si2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_si_world2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_si3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_si3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("CDD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_si_world3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("0", "30+", "350+", "1000+", "2500+")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
@@ -2255,25 +2257,25 @@ df2_s <- filter(df2_s, scen != "Baseline (historical climate, 2020 population)")
 df2_s$exp_q = factor(df2_s$exp_q, ordered = T)
 df2_s$exp_q = as.numeric(df2_s$exp_q)
 
-g3_b <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("95th pctl. Tmax (C°) exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_b <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("Population change from 2020 (million people), range across GCMs") + xlab("TMAX95 exposure (°C)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group")+ scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_b_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_b_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("95th pctl. Tmax (C°) exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_b_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("TMAX95 exposure (°C)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") +  scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_b_si_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 ##
 
-g3_b_si_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("95th pctl. Tmax (C°) exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_b_si_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("TMAX95 exposure (°C)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_b_si_world_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_b_si_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("95th pctl. Tmax (C°) exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_b_si_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("TMAX95 exposure (°C)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group") + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_b_si_world_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<24", "24-30", "30-35", "35-37.5", ">37.5")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
@@ -2366,25 +2368,25 @@ df2_s <- filter(df2_s, scen != "Baseline (historical climate, 2020 population)")
 df2_s$exp_q = factor(df2_s$exp_q, ordered = T)
 df2_s$exp_q = as.numeric(df2_s$exp_q)
 
-g3_c <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#hot days / yr. exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_c <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#HD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group")+ scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_c_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP5(85), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP5(85), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_c_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#hot days / yr. exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_c_si <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#HD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group")+ scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_c_si_world <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP2(45), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP2(45), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 ##
 
-g3_c_si_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#hot days / yr. exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_c_si_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) +  geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#HD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group")+ scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_c_si_world_2 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP1(26), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP1(26), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 #
 
-g3_c_si_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#hot days / yr. exposure") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
+g3_c_si_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050"), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp"), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("#HD exposure (#)") + facet_wrap(vars(reg), scales = "free", nrow=6) + scale_colour_discrete(name="Pop. group")+ scale_fill_discrete(name="Pop. group") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
 g3_c_si_world_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yintercept = 0, alpha=0.75, lwd=0.15) + geom_smooth(data=df2_s %>% filter(scen=="SSP3(70), year 2050") %>% dplyr::group_by(variable, exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, fill=pop_group), colour="transparent", linewidth=0.15, level = 0.99) + geom_point(data=df2_s %>% filter(scen=="SSP3(70), year 2050" & variable=="exp") %>% dplyr::group_by(exp_q, pop_group) %>% dplyr::summarise(value=sum(value, na.rm=T)), aes(x=exp_q, y=value/1e6, colour=pop_group), size=1.5) + ylab("") + xlab("") + scale_fill_discrete(name="Pop. group") + scale_colour_discrete(name="Pop. group")  + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_x_continuous(breaks=c(1:5), labels=c("<5", "5-10", "10-25", "25-50", ">50")) + theme(strip.background = element_blank(), strip.text = element_blank(), aspect.ratio=.5)
 
@@ -2394,20 +2396,23 @@ g3_c_si_world_3 <- ggplot() + theme_classic(base_size = 13) + geom_hline(yinterc
 
 g3_tot <- (g3_world + g3_c_world + g3_b_world + g3 + g3_c + g3_b)  + plot_layout(ncol=3, guides = "collect") & theme(plot.margin = margin(.1, .01, .05, .01, "cm"), legend.position = "bottom", legend.direction = "horizontal")
 
+ggsave("g3.pdf", g3_tot, width = 8, height = 8, scale=1.35)
 ggsave("g3.png", g3_tot, width = 8, height = 8, scale=1.35)
 
 g3_tot_si <- (g3_si_world + g3_c_si_world + g3_b_si_world + g3_si + g3_c_si + g3_b_si)  + plot_layout(ncol=3, guides = "collect") & theme(plot.margin = margin(.1, .01, .05, .01, "cm"), legend.position = "bottom", legend.direction = "horizontal")
 
-ggsave("g3_si_245.png", g3_tot_si, width = 8, height = 8, scale=1.35)
+ggsave("g3_si_245.pdf", g3_tot_si, width = 8, height = 8, scale=1.35)
+ggsave("g3_si_245.png", g3_tot, width = 8, height = 8, scale=1.35)
 
 g3_tot_si <- (g3_si_world2 + g3_c_si_world_2 + g3_b_si_world_2 + g3_si2 + g3_c_si_2 + g3_b_si_2)  + plot_layout(ncol=3, guides = "collect") & theme(plot.margin = margin(.1, .01, .05, .01, "cm"), legend.position = "bottom", legend.direction = "horizontal")
 
+ggsave("g3_si_126.pdf", g3_tot_si, width = 8, height = 8, scale=1.35)
 ggsave("g3_si_126.png", g3_tot_si, width = 8, height = 8, scale=1.35)
 
 g3_tot_si <- (g3_si_world3 + g3_c_si_world_3 + g3_b_si_world_3 + g3_si3 + g3_c_si_3 + g3_b_si_3)  + plot_layout(ncol=3, guides = "collect") & theme(plot.margin = margin(.1, .01, .05, .01, "cm"), legend.position = "bottom", legend.direction = "horizontal")
 
+ggsave("g3_si_370.pdf", g3_tot_si, width = 8, height = 8, scale=1.35)
 ggsave("g3_si_370.png", g3_tot_si, width = 8, height = 8, scale=1.35)
-
 
 ###
 
@@ -2822,24 +2827,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -2861,15 +2866,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 deco_a <- ggplot(df_decompose)+
   theme_classic()+
@@ -2881,7 +2886,7 @@ deco_a <- ggplot(df_decompose)+
 
 # df_decompose_r <- df_decompose %>% group_by(scenario, reg...1) %>% dplyr::mutate(value=value/sum(value, na.rm=T))
 # 
-# df_decompose_r <- filter(df_decompose_r, scenario!="Baseline")
+# df_decompose_r <- filter(df_decompose_r, scenario!="Historical")
 # 
 # df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging"))
 # 
@@ -2898,7 +2903,7 @@ deco_a <- ggplot(df_decompose)+
 
 df_decompose_r <- df_decompose %>% group_by(scenario, type) %>% dplyr::summarise(value=sum(value, na.rm=T))
 
-df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r$reg <- "Global"
 
@@ -3238,24 +3243,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -3277,15 +3282,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 deco_c <- ggplot(df_decompose)+
   theme_classic()+
@@ -3297,7 +3302,7 @@ deco_c <- ggplot(df_decompose)+
 
 # df_decompose_r <- df_decompose %>% group_by(scenario, reg...1) %>% dplyr::mutate(value=value/sum(value, na.rm=T))
 # 
-# df_decompose_r <- filter(df_decompose_r, scenario!="Baseline")
+# df_decompose_r <- filter(df_decompose_r, scenario!="Historical")
 # 
 # df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging"))
 # 
@@ -3314,7 +3319,7 @@ deco_c <- ggplot(df_decompose)+
 
 df_decompose_r <- df_decompose %>% group_by(scenario, type) %>% dplyr::summarise(value=sum(value, na.rm=T))
 
-df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r$reg <- "Global"
 
@@ -3654,24 +3659,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -3693,15 +3698,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 deco_e <- ggplot(df_decompose)+
   theme_classic()+
@@ -3713,7 +3718,7 @@ deco_e <- ggplot(df_decompose)+
 
 # df_decompose_r <- df_decompose %>% group_by(scenario, reg...1) %>% dplyr::mutate(value=value/sum(value, na.rm=T))
 # 
-# df_decompose_r <- filter(df_decompose_r, scenario!="Baseline")
+# df_decompose_r <- filter(df_decompose_r, scenario!="Historical")
 # 
 # df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging"))
 # 
@@ -3730,7 +3735,7 @@ deco_e <- ggplot(df_decompose)+
 
 df_decompose_r <- df_decompose %>% group_by(scenario, type) %>% dplyr::summarise(value=sum(value, na.rm=T))
 
-df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose_r$type <- factor(df_decompose_r$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r$reg <- "Global"
 
@@ -3749,6 +3754,7 @@ deco <- deco_a + deco_b + deco_e + deco_f + deco_c + deco_d + plot_annotation(ta
 
 ###########################
 
+ggsave("decomposition.pdf", scale=1.5, width = 6, height = 7)
 ggsave("decomposition.png", scale=1.5, width = 6, height = 7)
 
 ###############
@@ -4013,24 +4019,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -4052,15 +4058,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r <- df_decompose
 
@@ -4074,7 +4080,7 @@ for(i in 1:5){
     scale_fill_manual(name="Driver", values = c(ggsci::pal_npg("nrc", alpha =1)(4)[2:4], ggsci::pal_npg("nrc", alpha =1)(9)[1]))+
     theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
-  ggsave(paste0("decomposition_country_", i, ".png"), scale=2, width = 8, height = 6)
+  ggsave(paste0("decomposition_country_", i, ".pdf"), scale=2, width = 8, height = 6)
 }
 
 ####
@@ -4337,24 +4343,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -4376,15 +4382,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r <- df_decompose
 
@@ -4398,7 +4404,7 @@ for(i in 1:5){
     scale_fill_manual(name="Driver", values = c(ggsci::pal_npg("nrc", alpha =1)(4)[2:4], ggsci::pal_npg("nrc", alpha =1)(9)[1]))+
     theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
-  ggsave(paste0("decomposition_country_", i, "_hotdays.png"), scale=2, width = 8, height = 6)
+  ggsave(paste0("decomposition_country_", i, "_hotdays.pdf"), scale=2, width = 8, height = 6)
 }
 
 ###
@@ -4663,24 +4669,24 @@ df_decompose$value...26 <- df_decompose$value...26 - df_decompose$value...2
 df_decompose <- reshape2::melt(df_decompose, c(1,3,5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25))
 
 df_decompose$scenario <- NA
-df_decompose$scenario[df_decompose$variable=="value...2"] <- "Baseline"
-df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...2"] <- "Historical"
+df_decompose$scenario[df_decompose$variable=="value...4"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...6"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...8"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...10"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...12"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...14"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...16"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...18"] <- "SSP370"
 
-df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126\ngrowth"
-df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370\ngrowth"
+df_decompose$scenario[df_decompose$variable=="value...20"] <- "SSP245"
+df_decompose$scenario[df_decompose$variable=="value...22"] <- "SSP585"
+df_decompose$scenario[df_decompose$variable=="value...24"] <- "SSP126"
+df_decompose$scenario[df_decompose$variable=="value...26"] <- "SSP370"
 
 df_decompose$type <- NA
-df_decompose$type[df_decompose$variable=="value...2"] <- "Baseline"
+df_decompose$type[df_decompose$variable=="value...2"] <- "Historical"
 df_decompose$type[df_decompose$variable=="value...4"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...6"] <- "Climate change"
 df_decompose$type[df_decompose$variable=="value...8"] <- "Climate change"
@@ -4702,15 +4708,15 @@ colnames(df_decompose)[1] <- "reg"
 
 #
 
-df_decompose_a = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP245\ngrowth")
-df_decompose_b = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP585\ngrowth")
-df_decompose_c = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP126\ngrowth")
-df_decompose_d = df_decompose %>% filter(scenario=="Baseline") %>%  mutate(scenario = "SSP370\ngrowth")
+df_decompose_a = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP245")
+df_decompose_b = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP585")
+df_decompose_c = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP126")
+df_decompose_d = df_decompose %>% filter(scenario=="Historical") %>%  mutate(scenario = "SSP370")
 
-df_decompose = df_decompose %>% filter(scenario!="Baseline")
+df_decompose = df_decompose %>% filter(scenario!="Historical")
 df_decompose = bind_rows(df_decompose, df_decompose_a, df_decompose_b, df_decompose_c, df_decompose_d)
 
-df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Baseline"))
+df_decompose$type <- factor(df_decompose$type , levels = c("Climate change", "Pop. growth", "Aging", "Historical"))
 
 df_decompose_r <- df_decompose
 
@@ -4724,7 +4730,7 @@ for(i in 1:5){
     scale_fill_manual(name="Driver", values = c(ggsci::pal_npg("nrc", alpha =1)(4)[2:4], ggsci::pal_npg("nrc", alpha =1)(9)[1]))+
     theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
-  ggsave(paste0("decomposition_country_", i, "_tmax.png"), scale=2, width = 8, height = 6)
+  ggsave(paste0("decomposition_country_", i, "_tmax.pdf"), scale=2, width = 8, height = 6)
 }
 
 ###############
